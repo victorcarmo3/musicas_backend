@@ -2,6 +2,7 @@ import express from "express"
 import cors from "cors"
 import mysql2 from "mysql2"
 import "dotenv/config"
+
 const app = express()
 
 app.use(express.json())
@@ -14,7 +15,7 @@ const sql = mysql2.createPool({
     database: process.env.NOME_BANCO
 })
 
-app.get("/", (request, response) => {
+app.get("/", (request, response) => { 
     const comandoSelect = "SELECT * FROM musicas_victorCampos"
     sql.query(comandoSelect, (error, data) => { 
         if (error){
@@ -23,10 +24,25 @@ app.get("/", (request, response) => {
         }
         response.json(data)
     })
+})
+
+app.post("/cadastrar", (request, response) => {
+    const { titulo, artista, genero, ano, duracao } = request.body
+
+    const comandoInsert = "INSERT INTO musicas_victorCampos(titulo, artista, genero, ano, duracao) VALUES (?, ?, ?, ?, ?)"
+
+    sql.query(comandoInsert, [titulo, artista, genero, ano, duracao], (error) => {
+
+        if(error) {
+            console.log(error)
+            return response.status(500).json({ mensagem: "Erro ao cadastrar música!"})
+        }
+
+        response.status(201).json({ mensagem: "Música cadastrada com sucesso!"})
+        
+    })
  })
 
 app.listen(3000, () => {
-    console.log('Servidor online');
-});
-
-export default app
+    console.log("Servidor online");
+})
